@@ -74,7 +74,7 @@ local function createGui1()
     local function setToOn()
         isFiring1 = true
         toggleButton1.Text = "On"
-        graduallySetRopeLength(4, 0.2) -- Gradually decrease to length 4 over 0.6 seconds
+        graduallySetRopeLength(4, 0.1) -- Gradually decrease to length 4 over 0.6 seconds
     end
 
     local function setToOff()
