@@ -1,4 +1,4 @@
-ocal ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
