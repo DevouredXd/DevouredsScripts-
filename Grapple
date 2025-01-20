@@ -349,8 +349,8 @@ local minimiseButton = Instance.new("TextButton")
 minimiseButton.Size = UDim2.new(0, 20, 1, 0)
 minimiseButton.Position = UDim2.new(1, -20, 0, 0)
 minimiseButton.BackgroundTransparency = 0
-minimiseButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
-minimiseButton.TextColor3 = Color3.new(1, 1, 1)
+minimiseButton.BackgroundColor3 = Color3.new(0, 0, 0)
+minimiseButton.TextColor3 = Color3.new(0, 0, 0)
 minimiseButton.Text = "+"
 minimiseButton.Parent = gui  -- Parent the + button to the main gui, not inside the frame
 
