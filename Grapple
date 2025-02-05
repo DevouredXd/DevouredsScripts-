@@ -11,7 +11,7 @@ local renderConnection
 -- Function to get the main rope
 local function getMainRope()
     local ropesFolder = workspace:FindFirstChild("Ropes")
-    local userRopeFolder = ropesFolder and ropesFolder:FindFirstChild("7unlv3d")
+    local userRopeFolder = ropesFolder and ropesFolder:FindFirstChild("m4xyq")
     return userRopeFolder and userRopeFolder:FindFirstChild("mainConnectionRope")
 end
 
