@@ -163,12 +163,12 @@ local function getPredictedPosition(torso)
     elseif velocity.Y < -6 then -- Player is falling
         predictionFactor = 0.3 -- Adjust for falling
     elseif velocity.Magnitude > 0.4 then -- Player is moving
-        predictionFactor = 0.3 -- Standard movement
+        predictionFactor = 0.2 -- Standard movement
     else
         predictionFactor = 0.1 -- Stationary target
     end
 
-    return torso.Position + (velocity * predictionFactor * 0.1) -- Aim closer to the target
+    return torso.Position + (velocity * predictionFactor * 0.2) -- Aim closer to the target
 end
 
 -- Function to check for grapple tool
