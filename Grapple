@@ -151,7 +151,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local targetPlayer = nil
 local isEnabled = false
-local fireRate = 0.20
+local fireRate = 0.11
 
 -- Function to calculate movement prediction with closer aiming
 local function getPredictedPosition(torso)
@@ -159,16 +159,16 @@ local function getPredictedPosition(torso)
     local predictionFactor
 
     if velocity.Y > 6 then -- Player is jumping
-        predictionFactor = 0.02-- Lower prediction when jumping
+        predictionFactor = 0.3-- Lower prediction when jumping
     elseif velocity.Y < -6 then -- Player is falling
-        predictionFactor = 0.05 -- Adjust for falling
+        predictionFactor = 0.3 -- Adjust for falling
     elseif velocity.Magnitude > 4 then -- Player is moving
         predictionFactor = 0.1 -- Standard movement
     else
-        predictionFactor = 0.04 -- Stationary target
+        predictionFactor = 0.1 -- Stationary target
     end
 
-    return torso.Position + (velocity * predictionFactor * 0.5) -- Aim closer to the target
+    return torso.Position + (velocity * predictionFactor * 0.3) -- Aim closer to the target
 end
 
 -- Function to check for grapple tool
